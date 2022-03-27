@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Src\PlayerMatcher\Domain\Model;
 
+use Src\PlayerMatcher\Domain\Exceptions\AllGameSlotsAssignedException;
+use Src\PlayerMatcher\Domain\Exceptions\PlayerAlreadyAssignedToGameException;
+
 class Game
 {
     /**
-     * @var Player[]
+     * @var Opponent[]
      */
     private array $opponents;
 
@@ -16,8 +19,29 @@ class Game
         $this->opponents = [$this->creator];
     }
 
+    private function checkIfPlayerIsAlreadyAssigned(Player $player): void
+    {
+        foreach ($this->getOpponents() as $existingOpponent)
+        {
+            if ($existingOpponent instanceof Player && $existingOpponent->getId() === $player->getId())
+            {
+                throw new PlayerAlreadyAssignedToGameException("Player: {$player->getId()}");
+            }
+        }
+    }
+
     public function assignOpponent(Opponent $opponent): void
     {
+        if ($this->allSlotsAssigned())
+        {
+            throw new AllGameSlotsAssignedException();
+        }
+
+        if ($opponent instanceof Player)
+        {
+            $this->checkIfPlayerIsAlreadyAssigned($opponent);
+        }
+
         $this->opponents[] = $opponent;
     }
 
@@ -27,7 +51,7 @@ class Game
     }
 
     /**
-     * @return Player[]
+     * @return Opponent[]
      */
     public function getOpponents(): array
     {

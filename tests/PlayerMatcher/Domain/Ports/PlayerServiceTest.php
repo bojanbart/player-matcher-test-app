@@ -39,6 +39,11 @@ class PlayerServiceTest extends TestCase
             ->will($this->returnValue(3));
 
         $this->repository->expects($this->once())
+            ->method('fetchByName')
+            ->with($this->equalTo('bojan'))
+            ->will($this->returnValue(null));
+
+        $this->repository->expects($this->once())
             ->method('fetch')
             ->with($this->equalTo(3))
             ->will($this->returnValue(new Player(3, $playerData->getName())));
