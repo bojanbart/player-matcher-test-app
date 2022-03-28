@@ -7,6 +7,7 @@ namespace Test\PlayerMatcher\Domain\Ports;
 use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;
 use Src\PlayerMatcher\Domain\Exceptions\OneActiveGamePerPlayerException;
+use Src\PlayerMatcher\Domain\Exceptions\UnauthorizedGameCancellationException;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
 use Src\PlayerMatcher\Domain\Model\Player;
@@ -35,7 +36,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
     {
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator = new Player(1, 'creator');
+        $creator  = new Player(1, 'creator');
 
         $this->gameRepository->expects($this->once())
             ->method('create')
@@ -82,7 +83,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
 
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator = new Player(1, 'creator');
+        $creator  = new Player(1, 'creator');
 
         $this->gameRepository->expects($this->never())
             ->method('create');
@@ -109,7 +110,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
 
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator = new Player(1, 'creator');
+        $creator  = new Player(1, 'creator');
 
         $this->gameRepository->expects($this->never())
             ->method('create');
@@ -128,19 +129,55 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->serviceUnderTest->create($gameData, $creator);
     }
 
+    /**
+     * @test
+     * @return void
+     * @throws UnauthorizedGameCancellationException
+     */
     public function authorCanCancelHisGame()
     {
+        $creator = new Player(1, 'creator');
+        $game    = new Game(2, 'game', 4, $creator);
 
+        $this->gameRepository->expects($this->once())
+            ->method('cancel')
+            ->with($this->equalTo($game));
+
+        $this->serviceUnderTest->cancel($game, $creator);
     }
 
+    /**
+     * @test
+     * @return void
+     * @throws UnauthorizedGameCancellationException
+     */
     public function gameCannotBeCanceledByOtherPlayer()
     {
+        $this->expectException(UnauthorizedGameCancellationException::class);
 
+        $creator = new Player(1, 'creator');
+        $game    = new Game(2, 'game', 4, $creator);
+
+        $this->gameRepository->expects($this->never())
+            ->method('cancel');
+
+        $this->serviceUnderTest->cancel($game, new Player(3, 'bojan'));
     }
 
+    /**
+     * @test
+     * @return void
+     */
     public function shouldAssignOpponentToGame()
     {
+        $creator = new Player(1, 'creator');
+        $game    = new Game(2, 'game', 4, $creator);
+        $playerToAssign = new Player(5, 'some dude');
 
+        $this->gameRepository->expects($this->once())
+            ->method('update');
+
+        $this->serviceUnderTest->assignPlayer($game, $playerToAssign);
     }
 
     /**

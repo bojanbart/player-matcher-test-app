@@ -21,4 +21,8 @@ interface GameRepository
         Player $creator): ?int;
 
     public function fetchByCreator(Player $creator): array;
+
+    public function cancel(Game $game): void;
+
+    public function update(Game $game): void;
 }

@@ -7,8 +7,10 @@ namespace Src\PlayerMatcher\Domain\Ports;
 use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;
 use Src\PlayerMatcher\Domain\Exceptions\OneActiveGamePerPlayerException;
+use Src\PlayerMatcher\Domain\Exceptions\UnauthorizedGameCancellationException;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
+use Src\PlayerMatcher\Domain\Model\Opponent;
 use Src\PlayerMatcher\Domain\Model\Player;
 
 class GameService
@@ -50,12 +52,22 @@ class GameService
 
     public function cancel(Game $game, Player $player): void
     {
+        if ($game->getCreator()
+                ->getId() !== $player->getId())
+        {
+            throw new UnauthorizedGameCancellationException("Player: {$player->getId()} cannot cancel game: {$game->getId()}");
+        }
 
+        $this->gameRepository->cancel($game);
     }
 
-    public function assignPlayer(Game $game, Player $toAssign): Game
+    public function assignPlayer(Game $game, Opponent $toAssign): Game
     {
+        $game->assignOpponent($toAssign);
 
+        $this->gameRepository->update($game);
+
+        return $game;
     }
 
     public function get(int $id): Game
