@@ -8,6 +8,8 @@ use Src\PlayerMatcher\Adapters\Api\Response\GameResponseFactory;
 use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;
 use Src\PlayerMatcher\Domain\Exceptions\OneActiveGamePerPlayerException;
+use Src\PlayerMatcher\Domain\Exceptions\PlayerDoesntExistException;
+use Src\PlayerMatcher\Domain\Exceptions\UnauthorizedGameCancellationException;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
 use Src\PlayerMatcher\Domain\Ports\GameService;
 use Src\PlayerMatcher\Domain\Ports\PlayerService;
@@ -52,5 +54,26 @@ class GameApiService
 
     public function list(): Response {
         return $this->responseFactory->createList($this->gameService->list());
+    }
+
+    public function remove(int $id, int $playerId): Response {
+        try
+        {
+            $this->gameService->cancel($this->gameService->get($id), $this->playerService->get($playerId));
+        }
+        catch (GameDoesntExistException $e)
+        {
+            return $this->responseFactory->createInvalidRequestResponse($e->getMessage());
+        }
+        catch (PlayerDoesntExistException $e)
+        {
+            throw $e; // player must exist because of token authorization
+        }
+        catch (UnauthorizedGameCancellationException $e)
+        {
+            return $this->responseFactory->createInvalidRequestResponse($e->getMessage());
+        }
+
+        return new Response('OK', Response::HTTP_ACCEPTED, ['content-type' => 'text/html']);
     }
 }

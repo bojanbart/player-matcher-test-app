@@ -118,7 +118,18 @@ class GameRepository implements GameRepositoryInterface
 
     public function cancel(Game $game): void
     {
-        // TODO: Implement cancel() method.
+        $this->loadIfNecessary();
+
+        foreach ($this->games as $gameExisting)
+        {
+            if ($game->getId() === $gameExisting->getId())
+            {
+                unset($this->games[$gameExisting->getId()]);
+                $this->save();
+
+                return;
+            }
+        }
     }
 
     public function update(Game $game): void

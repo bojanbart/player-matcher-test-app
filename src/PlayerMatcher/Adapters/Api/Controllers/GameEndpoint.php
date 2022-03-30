@@ -42,6 +42,8 @@ class GameEndpoint extends AbstractController
 
     public function remove(int $id)
     {
+        $playerId = $this->authorize();
+
 
     }
 }
