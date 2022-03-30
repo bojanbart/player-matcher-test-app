@@ -7,8 +7,8 @@ namespace Test\PlayerMatcher\Domain\Model;
 use Src\PlayerMatcher\Domain\Exceptions\AllGameSlotsAssignedException;
 use Src\PlayerMatcher\Domain\Exceptions\PlayerAlreadyAssignedToGameException;
 use Src\PlayerMatcher\Domain\Model\Bot;
-use Src\PlayerMatcher\Domain\Model\Game;
-use Src\PlayerMatcher\Domain\Model\Player;
+use Src\PlayerMatcher\Domain\Model\FunGame;
+use Src\PlayerMatcher\Domain\Model\HumanPlayer;
 
 class GameTest extends \PHPUnit\Framework\TestCase
 {
@@ -19,9 +19,9 @@ class GameTest extends \PHPUnit\Framework\TestCase
      */
     public function shouldAssignOpponentToGame()
     {
-        $game = new Game(1, 'game', 4, new Player(4, 'creator'));
+        $game = new FunGame(1, 'game', 4, new HumanPlayer(4, 'creator'));
 
-        $game->assignOpponent(new Player(5, 'mark'));
+        $game->assignOpponent(new HumanPlayer(5, 'mark'));
         $game->assignOpponent(new Bot(Bot::WEAK_BOT_LEVEL));
 
         $this->assertEquals(false, $game->allSlotsAssigned());
@@ -35,9 +35,9 @@ class GameTest extends \PHPUnit\Framework\TestCase
      */
     public function shouldKnowWhenAllSlotsAreFilled()
     {
-        $game = new Game(1, 'game', 4, new Player(4, 'creator'));
+        $game = new FunGame(1, 'game', 4, new HumanPlayer(4, 'creator'));
 
-        $game->assignOpponent(new Player(5, 'mark'));
+        $game->assignOpponent(new HumanPlayer(5, 'mark'));
         $game->assignOpponent(new Bot(Bot::WEAK_BOT_LEVEL));
         $game->assignOpponent(new Bot(Bot::MEDIOCRE_BOT_LEVEL));
 
@@ -54,7 +54,7 @@ class GameTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(AllGameSlotsAssignedException::class);
 
-        $game = new Game(2, 'game', 2, new Player(2, 'creator'));
+        $game = new FunGame(2, 'game', 2, new HumanPlayer(2, 'creator'));
         $game->assignOpponent(new Bot(Bot::MEDIOCRE_BOT_LEVEL));
         $game->assignOpponent(new Bot(Bot::STRONG_BOT_LEVEL));
     }
@@ -68,8 +68,8 @@ class GameTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(PlayerAlreadyAssignedToGameException::class);
 
-        $player = new Player(1, 'bojan');
-        $game   = new Game(1, 'game', 4, $player);
+        $player = new HumanPlayer(1, 'bojan');
+        $game   = new FunGame(1, 'game', 4, $player);
         $game->assignOpponent($player);
     }
 
@@ -80,7 +80,7 @@ class GameTest extends \PHPUnit\Framework\TestCase
      */
     public function shouldBeAbleToAssignMoreThanOneSameBotLevelToGame()
     {
-        $game = new Game(1, 'game', 4, new Player(1, 'creator'));
+        $game = new FunGame(1, 'game', 4, new HumanPlayer(1, 'creator'));
 
         $game->assignOpponent(Bot::mediocre());
         $game->assignOpponent(Bot::mediocre());

@@ -8,9 +8,10 @@ use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;
 use Src\PlayerMatcher\Domain\Exceptions\OneActiveGamePerPlayerException;
 use Src\PlayerMatcher\Domain\Exceptions\UnauthorizedGameCancellationException;
+use Src\PlayerMatcher\Domain\Model\FunGame;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
-use Src\PlayerMatcher\Domain\Model\Player;
+use Src\PlayerMatcher\Domain\Model\HumanPlayer;
 use Src\PlayerMatcher\Domain\Ports\GameRepository;
 use Src\PlayerMatcher\Domain\Ports\GameService;
 
@@ -36,7 +37,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
     {
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator  = new Player(1, 'creator');
+        $creator  = new HumanPlayer(1, 'creator');
 
         $this->gameRepository->expects($this->once())
             ->method('create')
@@ -56,7 +57,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('fetch')
             ->with($this->equalTo(2))
-            ->will($this->returnValue(new Game(2, 'game', 4, $creator)));
+            ->will($this->returnValue(new FunGame(2, 'game', 4, $creator)));
 
         // when
         $game = $this->serviceUnderTest->create($gameData, $creator);
@@ -83,7 +84,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
 
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator  = new Player(1, 'creator');
+        $creator  = new HumanPlayer(1, 'creator');
 
         $this->gameRepository->expects($this->never())
             ->method('create');
@@ -91,7 +92,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('fetchByName')
             ->with($this->equalTo('game'))
-            ->will($this->returnValue(new Game(4, 'game', 5, new Player(1, 'john'))));
+            ->will($this->returnValue(new FunGame(4, 'game', 5, new HumanPlayer(1, 'john'))));
 
         // when
         $this->serviceUnderTest->create($gameData, $creator);
@@ -110,7 +111,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
 
         // given
         $gameData = new GameValueObject('game', 4);
-        $creator  = new Player(1, 'creator');
+        $creator  = new HumanPlayer(1, 'creator');
 
         $this->gameRepository->expects($this->never())
             ->method('create');
@@ -123,7 +124,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('fetchByCreator')
             ->with($this->equalTo($creator))
-            ->will($this->returnValue([new Game(3, 'some game', 2, $creator)]));
+            ->will($this->returnValue([new FunGame(3, 'some game', 2, $creator)]));
 
         // when
         $this->serviceUnderTest->create($gameData, $creator);
@@ -136,8 +137,8 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
      */
     public function authorCanCancelHisGame()
     {
-        $creator = new Player(1, 'creator');
-        $game    = new Game(2, 'game', 4, $creator);
+        $creator = new HumanPlayer(1, 'creator');
+        $game    = new FunGame(2, 'game', 4, $creator);
 
         $this->gameRepository->expects($this->once())
             ->method('cancel')
@@ -155,13 +156,13 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException(UnauthorizedGameCancellationException::class);
 
-        $creator = new Player(1, 'creator');
-        $game    = new Game(2, 'game', 4, $creator);
+        $creator = new HumanPlayer(1, 'creator');
+        $game    = new FunGame(2, 'game', 4, $creator);
 
         $this->gameRepository->expects($this->never())
             ->method('cancel');
 
-        $this->serviceUnderTest->cancel($game, new Player(3, 'bojan'));
+        $this->serviceUnderTest->cancel($game, new HumanPlayer(3, 'bojan'));
     }
 
     /**
@@ -170,9 +171,9 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
      */
     public function shouldAssignOpponentToGame()
     {
-        $creator = new Player(1, 'creator');
-        $game    = new Game(2, 'game', 4, $creator);
-        $playerToAssign = new Player(5, 'some dude');
+        $creator = new HumanPlayer(1, 'creator');
+        $game    = new FunGame(2, 'game', 4, $creator);
+        $playerToAssign = new HumanPlayer(5, 'some dude');
 
         $this->gameRepository->expects($this->once())
             ->method('update');
@@ -190,7 +191,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('fetch')
             ->with($this->equalTo(1))
-            ->will($this->returnValue(new Game(1, 'game', 2, new Player(1, 'creator'))));
+            ->will($this->returnValue(new FunGame(1, 'game', 2, new HumanPlayer(1, 'creator'))));
 
         $game = $this->serviceUnderTest->get(1);
 

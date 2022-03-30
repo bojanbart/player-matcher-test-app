@@ -16,9 +16,9 @@ class PlayerEndpoint extends AbstractController
 
     public function create()
     {
-        $name = $this->request->get('name', '');
+        $parameters = json_decode($this->request->getContent(), true);
 
-        $this->apiService->create($name)
+        $this->apiService->create($parameters['name'] ?? '')
             ->send();
     }
 

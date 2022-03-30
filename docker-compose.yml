@@ -9,3 +9,4 @@ services:
       - '8085:80'
     volumes:
       - '.:/var/www/html'
+      - './build/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'

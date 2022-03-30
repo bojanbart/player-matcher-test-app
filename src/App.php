@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Src;
 
+use DI\ContainerBuilder;
+use Psr\Container\ContainerInterface;
 use Src\PlayerMatcher\Adapters\Api\RouterFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,11 +15,23 @@ use Symfony\Component\Routing\RequestContext;
 class App
 {
     private \Symfony\Component\Routing\Router $router;
+    private     ContainerInterface                               $container;
 
     public function run(): void
     {
-        $this->registerRoutes()
+        $this->registerContainer()
+            ->registerRoutes()
             ->dispatch();
+    }
+
+    private function registerContainer(): App
+    {
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->addDefinitions(__DIR__.'/PlayerMatcher/DependencyInjection/config.php');
+
+        $this->container = $containerBuilder->build();
+
+        return $this;
     }
 
     private function registerRoutes(): App
@@ -51,15 +65,17 @@ class App
             return !str_starts_with($key, '_');
         }, ARRAY_FILTER_USE_KEY);
 
-        $controller = explode('::', $parameters['_controller']);
+        $controllerInfo  = explode('::', $parameters['_controller']);
+        $controllerClass = substr($controllerInfo[0], 1);
+        $controller      = $this->container->get($controllerClass);
 
         if (empty($parametersToPass))
         {
-            call_user_func([new $controller[0], $controller[1]]);
+            call_user_func([$controller, $controllerInfo[1]]);
         }
         else
         {
-            call_user_func([new $controller[0], $controller[1]], ...$parametersToPass);
+            call_user_func([$controller, $controllerInfo[1]], ...$parametersToPass);
         }
     }
 

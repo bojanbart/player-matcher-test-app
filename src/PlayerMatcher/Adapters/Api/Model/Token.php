@@ -42,7 +42,7 @@ class Token
 
     private static function getExpirationTime(): int
     {
-        return time() + 60 * 60 + self::LIFETIME;
+        return time() + 60 * 60 * self::LIFETIME;
     }
 
     public function isValid(): bool

@@ -2,3 +2,5 @@
 /vendor/
 tests/.phpunit.result.cache
 tmp
+!data/.gitkeep
+data

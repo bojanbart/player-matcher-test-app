@@ -4,27 +4,9 @@ declare(strict_types=1);
 
 namespace Src\PlayerMatcher\Domain\Model;
 
-class Player implements Opponent
+interface Player extends Opponent
 {
-    public function __construct(protected int $id, protected string $name){
+    public function getId(): int;
 
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-
+    public function getName(): string;
 }

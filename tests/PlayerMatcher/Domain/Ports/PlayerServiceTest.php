@@ -7,6 +7,7 @@ namespace Test\PlayerMatcher\Domain\Ports;
 use PHPUnit\Framework\TestCase;
 use Src\PlayerMatcher\Domain\Exceptions\PlayerDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\PlayerNameNotUniqueException;
+use Src\PlayerMatcher\Domain\Model\HumanPlayer;
 use Src\PlayerMatcher\Domain\Model\Player;
 use Src\PlayerMatcher\Domain\Model\PlayerValueObject;
 use Src\PlayerMatcher\Domain\Ports\PlayerRepository;
@@ -46,7 +47,7 @@ class PlayerServiceTest extends TestCase
         $this->repository->expects($this->once())
             ->method('fetch')
             ->with($this->equalTo(3))
-            ->will($this->returnValue(new Player(3, $playerData->getName())));
+            ->will($this->returnValue(new HumanPlayer(3, $playerData->getName())));
 
         // when
         $player = $this->serviceUnderTest->create($playerData);
@@ -74,7 +75,7 @@ class PlayerServiceTest extends TestCase
         $this->repository->expects($this->once())
             ->method('fetchByName')
             ->with($this->equalTo('bojan'))
-            ->will($this->returnValue(new Player(1, 'bojan')));
+            ->will($this->returnValue(new HumanPlayer(1, 'bojan')));
 
         // when
         $this->serviceUnderTest->create($playerData);
@@ -91,7 +92,7 @@ class PlayerServiceTest extends TestCase
         $this->repository->expects($this->once())
             ->method('fetch')
             ->with($this->equalTo(4))
-            ->will($this->returnValue(new Player(4, 'bojan')));
+            ->will($this->returnValue(new HumanPlayer(4, 'bojan')));
 
         // when
         $player = $this->serviceUnderTest->get(4);
