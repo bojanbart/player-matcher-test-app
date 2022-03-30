@@ -26,4 +26,11 @@ class HumanPlayer implements Player
     {
         return $this->name;
     }
+
+    public function toArray()
+    {
+        return [
+            'name' => $this->getName(),
+        ];
+    }
 }

@@ -80,8 +80,12 @@ class Token
             return;
         }
 
-        $this->payload = $decoded['payload'] ?? [];
+        $this->payload = $this->stdToArray($decoded->payload) ?? [];
         $this->valid   = true;
         $this->decoded = true;
+    }
+
+    private function stdToArray($obj): array {
+        return json_decode(json_encode($obj), true);
     }
 }

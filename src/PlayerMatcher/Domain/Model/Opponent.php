@@ -6,5 +6,5 @@ namespace Src\PlayerMatcher\Domain\Model;
 
 interface Opponent
 {
-
+    public function toArray();
 }

@@ -26,6 +26,8 @@ class PlayerRepository implements PlayerRepositoryInterface
 
     public function fetchByName(string $name): ?Player
     {
+        $this->loadIfNecessary();
+
         foreach ($this->players as $player)
         {
             if ($player->getName() === $name)
@@ -43,7 +45,7 @@ class PlayerRepository implements PlayerRepositoryInterface
 
         $newPlayerId = $this->getNextId();
 
-        $player                      = new PlayerArrayDecorator(new HumanPlayer($newPlayerId, $playerData->getName()));
+        $player                      = new HumanPlayer($newPlayerId, $playerData->getName());
         $this->players[$newPlayerId] = $player;
 
         $this->save();
@@ -77,9 +79,9 @@ class PlayerRepository implements PlayerRepositoryInterface
 
     private function save(): void
     {
-        $playersToStore = array_map(function ($raw)
+        $playersToStore = array_map(function (Player $raw)
         {
-            return $raw->toArray();
+            return (new PlayerArrayDecorator($raw))->toArray();
         }, $this->players);
 
         file_put_contents(__DIR__ . "/../../../../data/" . self::FILENAME, json_encode($playersToStore), LOCK_EX);

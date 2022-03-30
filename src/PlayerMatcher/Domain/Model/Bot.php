@@ -42,4 +42,11 @@ class Bot implements Opponent
     {
         return new Bot(self::STRONG_BOT_LEVEL);
     }
+
+    public function toArray()
+    {
+        return [
+            'name' => "AI BOT {$this->level}",
+        ];
+    }
 }

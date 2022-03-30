@@ -9,3 +9,34 @@ player_get_route:
   methods: GET
   requirements:
     id: '[0-9]+'
+
+game_add_route:
+  path: /game
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint::create
+  methods: POST
+
+game_list_route:
+  path: /game
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint::list
+  methods: GET
+
+game_get_route:
+  path: /game/{id}
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint::get
+  methods: GET
+  requirements:
+    id: '[0-9]+'
+
+game_update_route:
+  path: /game/{id}
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint::update
+  methods: PATCH
+  requirements:
+    id: '[0-9]+'
+
+game_remove_route:
+  path: /game/{id}
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint::remove
+  methods: DELETE
+  requirements:
+    id: '[0-9]+'

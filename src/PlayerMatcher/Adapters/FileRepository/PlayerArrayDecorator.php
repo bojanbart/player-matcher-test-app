@@ -15,15 +15,12 @@ class PlayerArrayDecorator implements Player
 
     public function toArray(): array
     {
-        return [
-            'id'   => $this->player->getId(),
-            'name' => $this->player->getName(),
-        ];
+        return array_merge($this->player->toArray(), ['id' => $this->player->getId()]);
     }
 
-    public static function fromArray(array $raw): PlayerArrayDecorator
+    public static function fromArray(array $raw): Player
     {
-        return new PlayerArrayDecorator(new HumanPlayer($raw['id'] ?? 0, $raw['name'] ?? ''));
+        return new HumanPlayer($raw['id'] ?? 0, $raw['name'] ?? '');
     }
 
     /**

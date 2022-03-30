@@ -16,7 +16,7 @@ class PlayerEndpoint extends AbstractController
 
     public function create()
     {
-        $parameters = json_decode($this->request->getContent(), true);
+        $parameters = $this->getParameters();
 
         $this->apiService->create($parameters['name'] ?? '')
             ->send();
@@ -27,4 +27,6 @@ class PlayerEndpoint extends AbstractController
         $this->apiService->get($id)
             ->send();
     }
+
+
 }
