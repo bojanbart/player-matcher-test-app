@@ -1,0 +1,11 @@
+player_add_route:
+  path: /player
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\PlayerEndpoint::create
+  methods: POST
+
+player_get_route:
+  path: /player/{id}
+  controller: \Src\PlayerMatcher\Adapters\Api\Controllers\PlayerEndpoint::get
+  methods: GET
+  requirements:
+    id: '[0-9]+'

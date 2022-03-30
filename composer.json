@@ -15,5 +15,11 @@
             "email": "bojan.bart@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "symfony/routing": "^5.4",
+        "symfony/http-foundation": "^5.4",
+        "symfony/yaml": "^5.4",
+        "symfony/config": "^5.4",
+        "firebase/php-jwt": "^6.1"
+    }
 }

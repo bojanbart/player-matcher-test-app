@@ -1,0 +1,11 @@
+version: '3'
+services:
+  phphttp:
+    build:
+      context: ./build/docker/phphttp
+      dockerfile: Dockerfile
+    image: phphttp
+    ports:
+      - '8085:80'
+    volumes:
+      - '.:/var/www/html'
