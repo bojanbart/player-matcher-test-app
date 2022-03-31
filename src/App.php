@@ -9,13 +9,14 @@ use Psr\Container\ContainerInterface;
 use Src\PlayerMatcher\Adapters\Api\RouterFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RequestContext;
 
 class App
 {
     private \Symfony\Component\Routing\Router $router;
-    private     ContainerInterface                               $container;
+    private ContainerInterface                $container;
 
     public function run(): void
     {
@@ -27,7 +28,7 @@ class App
     private function registerContainer(): App
     {
         $containerBuilder = new ContainerBuilder();
-        $containerBuilder->addDefinitions(__DIR__.'/PlayerMatcher/DependencyInjection/config.php');
+        $containerBuilder->addDefinitions(__DIR__ . '/PlayerMatcher/DependencyInjection/config.php');
 
         $this->container = $containerBuilder->build();
 
@@ -53,6 +54,10 @@ class App
         catch (ResourceNotFoundException $e)
         {
             $this->notFound();
+        }
+        catch (MethodNotAllowedException $e)
+        {
+            $this->notAllowed();
         }
 
         if (empty($parameters))
@@ -82,6 +87,12 @@ class App
     private function notFound(): void
     {
         (new Response('Not found', Response::HTTP_NOT_FOUND, ['content-type' => 'text/html']))->send();
+        exit();
+    }
+
+    private function notAllowed(): void
+    {
+        (new Response('Not allowed', Response::HTTP_METHOD_NOT_ALLOWED, ['content-type' => 'text/html']))->send();
         exit();
     }
 }

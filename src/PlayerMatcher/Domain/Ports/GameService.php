@@ -20,7 +20,23 @@ class GameService
 
     }
 
+    private function checkIfThereIsUnfilledGameCreatedByPlayer(Player $creator): void
+    {
+        $gamesByPlayer = $this->gameRepository->fetchByCreator($creator);
 
+        foreach ($gamesByPlayer as $game)
+        {
+            if (!$game->allSlotsAssigned())
+            {
+                throw new OneActiveGamePerPlayerException("There is already at least one game awaiting players created by player: {$creator->getId()}");
+            }
+        }
+    }
+
+    /**
+     * @throws OneActiveGamePerPlayerException
+     * @throws GameNameNotUniqueException
+     */
     public function create(GameValueObject $gameData, Player $creator): Game
     {
         if ($this->gameRepository->fetchByName($gameData->getName()) !== null)
@@ -28,10 +44,7 @@ class GameService
             throw new GameNameNotUniqueException("Game with name: {$gameData->getName()} already exists");
         }
 
-        if (count($this->gameRepository->fetchByCreator($creator)) !== 0)
-        {
-            throw new OneActiveGamePerPlayerException("There is already at least one game awaiting players created by player: {$creator->getId()}");
-        }
+        $this->checkIfThereIsUnfilledGameCreatedByPlayer($creator);
 
         $id = $this->gameRepository->create($gameData, $creator);
 
@@ -61,7 +74,7 @@ class GameService
         $this->gameRepository->cancel($game);
     }
 
-    public function assignPlayer(Game $game, Opponent $toAssign): Game
+    public function assignOpponent(Game $game, Opponent $toAssign): Game
     {
         $game->assignOpponent($toAssign);
 

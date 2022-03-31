@@ -28,7 +28,7 @@ class Bot implements Opponent
         return $this->level;
     }
 
-    public static function week(): Bot
+    public static function weak(): Bot
     {
         return new Bot(self::WEAK_BOT_LEVEL);
     }

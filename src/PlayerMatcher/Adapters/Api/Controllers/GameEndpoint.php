@@ -37,13 +37,17 @@ class GameEndpoint extends AbstractController
 
     public function update(int $id)
     {
+        $playerId = $this->authorize();
 
+        $parameters = $this->getParameters();
+
+        $this->apiService->update($id, $playerId, $parameters['opponents']?? [])->send();
     }
 
     public function remove(int $id)
     {
         $playerId = $this->authorize();
 
-
+        return $this->apiService->remove($id, $playerId)->send();
     }
 }

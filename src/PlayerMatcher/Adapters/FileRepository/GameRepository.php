@@ -134,7 +134,11 @@ class GameRepository implements GameRepositoryInterface
 
     public function update(Game $game): void
     {
-        // TODO: Implement update() method.
+        $this->loadIfNecessary();
+
+        $this->games[$game->getId()] = $game;
+
+        $this->save();
     }
 
     private function getNextId(): int

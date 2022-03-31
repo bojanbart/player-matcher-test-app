@@ -8,6 +8,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait GenericResponse
 {
+    public function createForbiddenRequestResponse(?string $message = null): Response
+    {
+        return new Response($message ?? 'Forbidden Request', Response::HTTP_FORBIDDEN, ['content-type' => 'text/html']);
+    }
+
     public function createInvalidRequestResponse(?string $message = null): Response
     {
         return new Response($message ?? 'Invalid Request', Response::HTTP_BAD_REQUEST, ['content-type' => 'text/html']);

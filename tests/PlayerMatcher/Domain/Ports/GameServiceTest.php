@@ -8,6 +8,7 @@ use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;
 use Src\PlayerMatcher\Domain\Exceptions\OneActiveGamePerPlayerException;
 use Src\PlayerMatcher\Domain\Exceptions\UnauthorizedGameCancellationException;
+use Src\PlayerMatcher\Domain\Model\Bot;
 use Src\PlayerMatcher\Domain\Model\FunGame;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
@@ -104,7 +105,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
      * @throws GameNameNotUniqueException
      * @throws OneActiveGamePerPlayerException
      */
-    public function shouldThrowExceptionWhenThereIsNonCancelledGameCreatedByThisPlayer()
+    public function shouldThrowExceptionWhenThereIsNonCancelledGameWithOpenSlotsCreatedByThisPlayer()
     {
         // exception
         $this->expectException(OneActiveGamePerPlayerException::class);
@@ -112,6 +113,8 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         // given
         $gameData = new GameValueObject('game', 4);
         $creator  = new HumanPlayer(1, 'creator');
+        $existingGame = new FunGame(3, 'some game', 2, $creator);
+        $existingGame->assignOpponent(Bot::weak());
 
         $this->gameRepository->expects($this->never())
             ->method('create');
@@ -124,7 +127,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('fetchByCreator')
             ->with($this->equalTo($creator))
-            ->will($this->returnValue([new FunGame(3, 'some game', 2, $creator)]));
+            ->will($this->returnValue([$existingGame]));
 
         // when
         $this->serviceUnderTest->create($gameData, $creator);
@@ -178,7 +181,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         $this->gameRepository->expects($this->once())
             ->method('update');
 
-        $this->serviceUnderTest->assignPlayer($game, $playerToAssign);
+        $this->serviceUnderTest->assignOpponent($game, $playerToAssign);
     }
 
     /**
