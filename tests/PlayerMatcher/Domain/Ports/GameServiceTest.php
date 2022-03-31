@@ -104,6 +104,55 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
      * @return void
      * @throws GameNameNotUniqueException
      * @throws OneActiveGamePerPlayerException
+     * @throws \Src\PlayerMatcher\Domain\Exceptions\AllGameSlotsAssignedException
+     */
+    public function shouldCreateValidGameIfThereAreOnlyGamesWithAllSlotsFilled(){
+        // given
+        $gameData = new GameValueObject('game', 4);
+        $creator  = new HumanPlayer(1, 'creator');
+        $existingGame1 = new FunGame(4, 'existing', 2, $creator);
+        $existingGame1->assignOpponent(Bot::mediocre());
+        $existingGame2 = new FunGame(5, 'existing', 3, $creator);
+        $existingGame2->assignOpponent(Bot::strong());
+        $existingGame2->assignOpponent(Bot::strong());
+
+        $this->gameRepository->expects($this->once())
+            ->method('create')
+            ->with($this->equalTo($gameData), $this->equalTo($creator))
+            ->will($this->returnValue(9));
+
+        $this->gameRepository->expects($this->once())
+            ->method('fetchByName')
+            ->with($this->equalTo('game'))
+            ->will($this->returnValue(null));
+
+        $this->gameRepository->expects($this->once())
+            ->method('fetchByCreator')
+            ->with($this->equalTo($creator))
+            ->will($this->returnValue([$existingGame1, $existingGame2]));
+
+        $this->gameRepository->expects($this->once())
+            ->method('fetch')
+            ->with($this->equalTo(9))
+            ->will($this->returnValue(new FunGame(9, 'game', 4, $creator)));
+
+        // when
+        $game = $this->serviceUnderTest->create($gameData, $creator);
+
+        // then
+        $this->assertInstanceOf(Game::class, $game);
+        $this->assertEquals(9, $game->getId());
+        $this->assertEquals('game', $game->getName());
+        $this->assertEquals(4, $game->getSlots());
+        $this->assertEquals($creator, $game->getCreator());
+        $this->assertCount(1, $game->getOpponents());
+    }
+
+    /**
+     * @test
+     * @return void
+     * @throws GameNameNotUniqueException
+     * @throws OneActiveGamePerPlayerException
      */
     public function shouldThrowExceptionWhenThereIsNonCancelledGameWithOpenSlotsCreatedByThisPlayer()
     {
@@ -113,7 +162,7 @@ class GameServiceTest extends \PHPUnit\Framework\TestCase
         // given
         $gameData = new GameValueObject('game', 4);
         $creator  = new HumanPlayer(1, 'creator');
-        $existingGame = new FunGame(3, 'some game', 2, $creator);
+        $existingGame = new FunGame(3, 'some game', 3, $creator);
         $existingGame->assignOpponent(Bot::weak());
 
         $this->gameRepository->expects($this->never())
