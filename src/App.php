@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Src;
 
-use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Src\PlayerMatcher\Adapters\Api\RouterFactory;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -28,9 +30,11 @@ class App
     private function registerContainer(): App
     {
         $containerBuilder = new ContainerBuilder();
-        $containerBuilder->addDefinitions(__DIR__ . '/PlayerMatcher/DependencyInjection/config.php');
+        $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
+        $loader->load('services.yml');
+        $containerBuilder->compile();
 
-        $this->container = $containerBuilder->build();
+        $this->container = $containerBuilder;
 
         return $this;
     }

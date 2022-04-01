@@ -21,6 +21,6 @@
         "symfony/yaml": "^5.4",
         "symfony/config": "^5.4",
         "firebase/php-jwt": "^6.1",
-        "php-di/php-di": "^6.3"
+        "symfony/dependency-injection": "^5.4"
     }
 }

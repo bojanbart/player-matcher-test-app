@@ -5,3 +5,9 @@ services:
 
   Src\:
     resource: '../src/*'
+
+  Src\PlayerMatcher\Adapters\Api\Controllers\GameEndpoint:
+    public: true
+
+  Src\PlayerMatcher\Adapters\Api\Controllers\PlayerEndpoint:
+    public: true
