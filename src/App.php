@@ -6,8 +6,10 @@ namespace Src;
 
 use Psr\Container\ContainerInterface;
 use Src\PlayerMatcher\Adapters\Api\RouterFactory;
+use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,12 +31,26 @@ class App
 
     private function registerContainer(): App
     {
-        $containerBuilder = new ContainerBuilder();
-        $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
-        $loader->load('services.yml');
-        $containerBuilder->compile();
+        $inDebug = true;
 
-        $this->container = $containerBuilder;
+        $file                 = __DIR__ . '/../tmp/cache/container.php';
+        $containerConfigCache = new ConfigCache($file, $inDebug);
+
+        if (!$containerConfigCache->isFresh())
+        {
+            $containerBuilder = new ContainerBuilder();
+            $loader           = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
+            $loader->load('services.yml');
+            $containerBuilder->compile();
+
+            $dumper = new PhpDumper($containerBuilder);
+
+            $containerConfigCache->write($dumper->dump(['class' => 'BojanCachedContainer']),
+                $containerBuilder->getResources());
+        }
+
+        require_once $file;
+        $this->container = new \BojanCachedContainer();
 
         return $this;
     }
