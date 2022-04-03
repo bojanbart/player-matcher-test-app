@@ -3,9 +3,9 @@
 namespace Src\PlayerMatcher\Adapters\DbRepository;
 
 use Doctrine\ORM\EntityManager;
-use Src\PlayerMatcher\Adapters\DbRepository\Entities\Opponent;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
+use Src\PlayerMatcher\Domain\Model\Opponent;
 use Src\PlayerMatcher\Domain\Model\Player;
 use Src\PlayerMatcher\Domain\Ports\GameRepository as GameRepositoryInterface;
 
@@ -101,6 +101,32 @@ class GameRepository implements GameRepositoryInterface
 
     public function update(Game $game): void
     {
-        // TODO: Implement update() method.
+        $gameEntity = $this->entityManager->find(Entities\Game::class, $game->getId());
+
+        if ($gameEntity === null) {
+            throw new \Exception("Unable to find game: #{$game->getId()}");
+        }
+
+        $updatedOpponents = $game->getOpponents();
+        $existingOpponents = $gameEntity->toDomainModel()->getOpponents();
+
+        foreach ($this->determineOpponentsToAdd($updatedOpponents, $existingOpponents) as $newOpponent) {
+            $opponentEntity = $this->createNewOpponentEntity($newOpponent);
+            $gameEntity->addOpponent($opponentEntity);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    private function createNewOpponentEntity(Opponent $domainOpponent): Entities\Opponent
+    {
+// todo finish implementation
+    }
+
+    private function determineOpponentsToAdd(array $updated, array $existing): array
+    {
+        $result = [];
+// todo finish implementation
+        return $result;
     }
 }

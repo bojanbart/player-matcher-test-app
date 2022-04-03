@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src\PlayerMatcher\Adapters\DbRepository\Entities;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Src\PlayerMatcher\Domain\Model\Bot;
 use Src\PlayerMatcher\Domain\Model\FunGame;
@@ -39,11 +40,20 @@ class Game
     private Player $creator;
 
     /**
-     * @ORM\OneToMany(targetEntity="Opponent", mappedBy="game")
+     * @ORM\OneToMany(targetEntity="Opponent", mappedBy="game", cascade={"persist", "remove"})
      * @ORM\OrderBy({"order" = "ASC"})
      * @var Opponent[]
      */
     private $opponents;
+
+    public function addOpponent(Opponent $opponent): void
+    {
+        if ($this->opponents === null) {
+            $this->opponents = new ArrayCollection();
+        }
+
+        $this->opponents->add($opponent);
+    }
 
     public function toDomainModel(): DomainGame
     {
