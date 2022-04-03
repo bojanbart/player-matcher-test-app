@@ -11,3 +11,12 @@ services:
 
   Src\PlayerMatcher\Adapters\Api\Controllers\PlayerEndpoint:
     public: true
+
+  Doctrine\ORM\EntityManager:
+    factory: ['@Src\PlayerMatcher\Adapters\DbRepository\EntityManagerFactory', 'create']
+
+  Src\PlayerMatcher\Domain\Ports\PlayerRepository:
+    class: Src\PlayerMatcher\Adapters\DbRepository\PlayerRepository
+
+  Src\PlayerMatcher\Domain\Ports\GameRepository:
+    class: Src\PlayerMatcher\Adapters\DbRepository\GameRepository

@@ -16,8 +16,7 @@ class PlayerApiService
 {
 
     public function __construct(private PlayerService $playerService,
-        private PlayerResponseFactory $responseFactory,
-        private TokenRepository $tokenRepository)
+        private PlayerResponseFactory $responseFactory)
     {
     }
 
@@ -37,8 +36,6 @@ class PlayerApiService
             'name' => $player->getName(),
         ]);
 
-        $this->tokenRepository->storeToken($token->getToken(), $player->getId());
-
         return $this->responseFactory->create($player, $token, Response::HTTP_CREATED);
     }
 
@@ -57,8 +54,6 @@ class PlayerApiService
             'id'   => $player->getId(),
             'name' => $player->getName(),
         ]);
-
-        $this->tokenRepository->storeToken($token->getToken(), $player->getId());
 
         return $this->responseFactory->create($player, $token, Response::HTTP_OK);
     }

@@ -10,3 +10,40 @@ services:
     volumes:
       - '.:/var/www/html'
       - './build/config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
+    networks:
+      - 'ports_and_adapters_player_matcher_network'
+
+  mysql:
+    container_name: 'mysql_player_matcher'
+    image: mysql:8.0
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'ports_and_adapters_player_matcher_volume:/var/lib/mysql'
+    networks:
+      - 'ports_and_adapters_player_matcher_network'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: playermatcher
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: pass1
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8086:80"
+    volumes:
+      - /sessions
+    networks:
+      - ports_and_adapters_player_matcher_network
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_USER: root
+      PMA_PASSWORD: root
+      PMA_HOST: mysql
+
+volumes:
+  ports_and_adapters_player_matcher_volume: {}
+
+networks:
+  ports_and_adapters_player_matcher_network: {}

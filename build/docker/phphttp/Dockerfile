@@ -7,5 +7,6 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" \
     && a2enmod rewrite \
+    && docker-php-ext-install pdo_mysql \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug

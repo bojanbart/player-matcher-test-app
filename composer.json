@@ -21,6 +21,11 @@
         "symfony/yaml": "^5.4",
         "symfony/config": "^5.4",
         "firebase/php-jwt": "^6.1",
-        "symfony/dependency-injection": "^5.4"
+        "symfony/dependency-injection": "^5.4",
+        "doctrine/orm": "^2.11",
+        "doctrine/dbal": "^3.3",
+        "doctrine/annotations": "^1.13",
+        "symfony/cache": "^5.4",
+        "vlucas/phpdotenv": "^5.4"
     }
 }

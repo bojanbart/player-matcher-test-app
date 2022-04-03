@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src;
 
+use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use Src\PlayerMatcher\Adapters\Api\RouterFactory;
 use Symfony\Component\Config\ConfigCache;
@@ -24,17 +25,26 @@ class App
 
     public function run(): void
     {
-        $this->registerContainer()
+        $this->initEnv()
+            ->registerContainer()
             ->registerRoutes()
             ->dispatch();
     }
 
+    private function initEnv(): App
+    {
+        $dotEnv = Dotenv::createImmutable(__DIR__.'/../');
+        $dotEnv->safeLoad();
+
+        return $this;
+    }
+
     private function registerContainer(): App
     {
-        $inDebug = true;
+        $inDevMode = (bool)$_ENV['DEV_MODE'];
 
         $file                 = __DIR__ . '/../tmp/cache/container.php';
-        $containerConfigCache = new ConfigCache($file, $inDebug);
+        $containerConfigCache = new ConfigCache($file, $inDevMode);
 
         if (!$containerConfigCache->isFresh())
         {
