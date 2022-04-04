@@ -79,6 +79,16 @@ class Game
         return $game;
     }
 
+    public function getMaxOrderValueForOpponent(): int
+    {
+        if ($this->opponents === null || count($this->opponents) === 0)
+        {
+            return 0;
+        }
+
+        return $this->opponents[count($this->opponents) - 1]->getOrder();
+    }
+
     /**
      * @param string $name
      */

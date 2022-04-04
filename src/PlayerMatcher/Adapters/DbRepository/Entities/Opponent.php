@@ -36,7 +36,7 @@ class Opponent
     private ?string $aiLevel;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(name="order_value", type="integer")
      */
     private int $order;
 
@@ -60,5 +60,40 @@ class Opponent
         return $this->aiLevel;
     }
 
+    public function getOrder(): int
+    {
+        return $this->order;
+    }
 
+    /**
+     * @param Player|null $player
+     */
+    public function setPlayer(?Player $player): void
+    {
+        $this->player = $player;
+    }
+
+    /**
+     * @param string|null $aiLevel
+     */
+    public function setAiLevel(?string $aiLevel): void
+    {
+        $this->aiLevel = $aiLevel;
+    }
+
+    /**
+     * @param int $order
+     */
+    public function setOrder(int $order): void
+    {
+        $this->order = $order;
+    }
+
+    /**
+     * @param Game $game
+     */
+    public function setGame(Game $game): void
+    {
+        $this->game = $game;
+    }
 }

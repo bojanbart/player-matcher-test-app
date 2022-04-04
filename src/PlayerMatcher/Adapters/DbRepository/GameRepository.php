@@ -3,6 +3,7 @@
 namespace Src\PlayerMatcher\Adapters\DbRepository;
 
 use Doctrine\ORM\EntityManager;
+use Src\PlayerMatcher\Domain\Model\Bot;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
 use Src\PlayerMatcher\Domain\Model\Opponent;
@@ -58,7 +59,8 @@ class GameRepository implements GameRepositoryInterface
         $game->setSlots($gameData->getSlots());
         $creatorEntity = $this->entityManager->find(Entities\Player::class, $creator->getId());
 
-        if($creatorEntity === null){
+        if ($creatorEntity === null)
+        {
             throw new \Exception("Unable to fetch player: #{$creator->getId()}");
         }
 
@@ -72,13 +74,9 @@ class GameRepository implements GameRepositoryInterface
 
     public function fetchByCreator(Player $creator): array
     {
-        $player = $this->entityManager->find(Entities\Player::class, $creator->getId());
+        $playerEntity = $this->getPlayerEntity($creator->getId());
 
-        if($player === null){
-            throw new \Exception("Unable to fetch player: #{$creator->getId()}");
-        }
-
-        $games = $player->getCreatedGames();
+        $games = $playerEntity->getCreatedGames();
 
         return array_map(function (Entities\Game $game)
         {
@@ -88,31 +86,52 @@ class GameRepository implements GameRepositoryInterface
 
     public function cancel(Game $game): void
     {
-        $gameEntity = $this->entityManager->find(Entities\Game::class, $game->getId());
-
-        if ($gameEntity === null)
-        {
-            throw new \Exception("Unable to find game: #{$game->getId()}");
-        }
+        $gameEntity = $this->getGameEntity($game->getId());
 
         $this->entityManager->remove($gameEntity);
         $this->entityManager->flush();
     }
 
-    public function update(Game $game): void
+    private function getPlayerEntity(int $id): Entities\Player
     {
-        $gameEntity = $this->entityManager->find(Entities\Game::class, $game->getId());
+        $playerEntity = $this->entityManager->find(Entities\Player::class, $id);
 
-        if ($gameEntity === null) {
-            throw new \Exception("Unable to find game: #{$game->getId()}");
+        if ($playerEntity === null)
+        {
+            throw new \Exception("Unable to fetch player: #{$id}");
         }
 
-        $updatedOpponents = $game->getOpponents();
-        $existingOpponents = $gameEntity->toDomainModel()->getOpponents();
+        return $playerEntity;
+    }
 
-        foreach ($this->determineOpponentsToAdd($updatedOpponents, $existingOpponents) as $newOpponent) {
+    private function getGameEntity(int $id): Entities\Game
+    {
+        $gameEntity = $this->entityManager->find(Entities\Game::class, $id);
+
+        if ($gameEntity === null)
+        {
+            throw new \Exception("Unable to find game: #{$id}");
+        }
+
+        return $gameEntity;
+    }
+
+    public function update(Game $game): void
+    {
+        $gameEntity = $this->getGameEntity($game->getId());
+
+        $updatedOpponents  = $game->getOpponents();
+        $existingOpponents = $gameEntity->toDomainModel()
+            ->getOpponents();
+        $nextOrder         = $gameEntity->getMaxOrderValueForOpponent() + 1;
+
+        foreach ($this->determineOpponentsToAdd($updatedOpponents, $existingOpponents) as $newOpponent)
+        {
             $opponentEntity = $this->createNewOpponentEntity($newOpponent);
+            $opponentEntity->setOrder($nextOrder);
+            $opponentEntity->setGame($gameEntity);
             $gameEntity->addOpponent($opponentEntity);
+            $nextOrder++;
         }
 
         $this->entityManager->flush();
@@ -120,13 +139,34 @@ class GameRepository implements GameRepositoryInterface
 
     private function createNewOpponentEntity(Opponent $domainOpponent): Entities\Opponent
     {
-// todo finish implementation
+        $opponentEntity = new Entities\Opponent();
+
+        if ($domainOpponent instanceof Bot)
+        {
+            $opponentEntity->setAiLevel($domainOpponent->getLevel());
+        }
+        else
+        {
+            $playerEntity = $this->getPlayerEntity($domainOpponent->getId());
+            $opponentEntity->setPlayer($playerEntity);
+        }
+
+        return $opponentEntity;
     }
 
     private function determineOpponentsToAdd(array $updated, array $existing): array
     {
         $result = [];
-// todo finish implementation
+
+        $existingCount = count($existing);
+        $updatedCount  = count($updated);
+
+        for (
+            $i = $existingCount; $i < $updatedCount; $i++)
+        {
+            $result[] = $updated[$i];
+        }
+
         return $result;
     }
 }
