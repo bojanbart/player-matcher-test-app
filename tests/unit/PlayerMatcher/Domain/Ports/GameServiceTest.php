@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\PlayerMatcher\Domain\Ports;
+namespace Test\Unit\PlayerMatcher\Domain\Ports;
 
 use Src\PlayerMatcher\Domain\Exceptions\GameDoesntExistException;
 use Src\PlayerMatcher\Domain\Exceptions\GameNameNotUniqueException;

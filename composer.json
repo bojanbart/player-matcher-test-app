@@ -6,7 +6,7 @@
     "autoload": {
         "psr-4": {
             "Src\\": "src/",
-            "Test\\": "tests/"
+            "Test\\Unit\\": "tests/unit/"
         }
     },
     "authors": [

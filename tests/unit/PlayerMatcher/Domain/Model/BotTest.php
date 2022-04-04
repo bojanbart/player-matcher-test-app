@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Test\PlayerMatcher\Domain\Model;
+namespace Test\Unit\PlayerMatcher\Domain\Model;
 
 use Src\PlayerMatcher\Domain\Exceptions\BotInvalidLevelException;
 use Src\PlayerMatcher\Domain\Model\Bot;

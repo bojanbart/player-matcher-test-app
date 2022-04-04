@@ -1,6 +1,6 @@
 .idea
 /vendor/
-tests/.phpunit.result.cache
+tests/unit/.phpunit.result.cache
 tmp
 !data/.gitkeep
 data
