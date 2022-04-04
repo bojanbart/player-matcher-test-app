@@ -12,6 +12,7 @@ use Src\PlayerMatcher\Domain\Ports\GameRepository as GameRepositoryInterface;
 
 class GameRepository implements GameRepositoryInterface
 {
+
     public function __construct(private EntityManager $entityManager)
     {
     }

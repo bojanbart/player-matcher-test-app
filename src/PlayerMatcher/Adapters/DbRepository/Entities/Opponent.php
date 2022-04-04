@@ -28,12 +28,12 @@ class Opponent
      * @ORM\OneToOne(targetEntity="Player")
      * @ORM\JoinColumn(name="player_id", referencedColumnName="id")
      */
-    private ?Player $player;
+    private ?Player $player = null;
 
     /**
      * @ORM\Column(type="string", nullable="true")
      */
-    private ?string $aiLevel;
+    private ?string $aiLevel = null;
 
     /**
      * @ORM\Column(name="order_value", type="integer")
