@@ -6,9 +6,24 @@ namespace Test\Component\Contexts\PlayerMatcher;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Tester\Exception\PendingException;
+use Src\PlayerMatcher\Domain\Ports\PlayerService;
+use Test\Component\Repositories\PlayerMatcher\InMemoryPlayerRepository;
 
 class ApplicationContext implements Context
 {
+    private \Exception|null $lastException = null;
+    private PlayerService $playerService;
+    private InMemoryPlayerRepository $playerRepository;
+
+    private function clearLastException(): void {
+        $this->lastException = null;
+    }
+
+    public function __construct(){
+        $this->playerRepository = new InMemoryPlayerRepository();
+        $this->playerService = new PlayerService($this->playerRepository);
+    }
+
     /**
      * @Given There is no game with name :arg1
      */
