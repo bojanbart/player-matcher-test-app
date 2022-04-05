@@ -1,12 +1,14 @@
 {
     "name": "bojan/php_ports_and_adapters_player_matcher",
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "behat/behat": "^3.10"
     },
     "autoload": {
         "psr-4": {
             "Src\\": "src/",
-            "Test\\Unit\\": "tests/unit/"
+            "Test\\Unit\\": "tests/unit/",
+            "Test\\Component\\": "tests/component/"
         }
     },
     "authors": [

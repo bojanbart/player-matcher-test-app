@@ -1,0 +1,13 @@
+default:
+  suites:
+    api:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        - Test\Component\Contexts\PlayerMatcher\ApiContext
+
+    application:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        - Test\Component\Contexts\PlayerMatcher\ApplicationContext

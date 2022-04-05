@@ -82,7 +82,7 @@ class GameApiService
         }
         catch (UnauthorizedGameCancellationException $e)
         {
-            return $this->responseFactory->createInvalidRequestResponse($e->getMessage());
+            return $this->responseFactory->createForbiddenRequestResponse($e->getMessage());
         }
 
         return new Response('OK', Response::HTTP_ACCEPTED, ['content-type' => 'text/html']);
