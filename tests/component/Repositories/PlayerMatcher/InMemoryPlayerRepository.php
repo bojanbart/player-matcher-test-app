@@ -20,8 +20,10 @@ class InMemoryPlayerRepository implements PlayerRepository
 
     public function fetchByName(string $name): ?Player
     {
-        foreach($this->players as $player){
-            if($player->getName()===$name){
+        foreach ($this->players as $player)
+        {
+            if ($player->getName() === $name)
+            {
                 return $player;
             }
         }

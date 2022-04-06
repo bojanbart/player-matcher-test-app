@@ -6,22 +6,43 @@ namespace Test\Component\Contexts\PlayerMatcher;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Tester\Exception\PendingException;
+use PHPUnit\Framework\Assert;
+use Src\PlayerMatcher\Domain\Model\Game;
+use Src\PlayerMatcher\Domain\Model\GameValueObject;
+use Src\PlayerMatcher\Domain\Model\HumanPlayer;
+use Src\PlayerMatcher\Domain\Model\Player;
+use Src\PlayerMatcher\Domain\Model\PlayerValueObject;
+use Src\PlayerMatcher\Domain\Ports\GameService;
 use Src\PlayerMatcher\Domain\Ports\PlayerService;
+use Test\Component\Repositories\PlayerMatcher\InMemoryGameRepository;
 use Test\Component\Repositories\PlayerMatcher\InMemoryPlayerRepository;
 
 class ApplicationContext implements Context
 {
-    private \Exception|null $lastException = null;
-    private PlayerService $playerService;
+    private \Exception|null          $lastException = null;
+    private                          $lastResult    = null;
+    private PlayerService            $playerService;
     private InMemoryPlayerRepository $playerRepository;
+    private GameService              $gameService;
+    private InMemoryGameRepository   $gameRepository;
+    private HumanPlayer              $identifiedPlayer;
 
-    private function clearLastException(): void {
+    private function clearLastException(): void
+    {
         $this->lastException = null;
     }
 
-    public function __construct(){
+    private function clearLastResult(): void
+    {
+        $this->lastResult = null;
+    }
+
+    public function __construct()
+    {
         $this->playerRepository = new InMemoryPlayerRepository();
-        $this->playerService = new PlayerService($this->playerRepository);
+        $this->playerService    = new PlayerService($this->playerRepository);
+        $this->gameRepository   = new InMemoryGameRepository();
+        $this->gameService      = new GameService($this->gameRepository);
     }
 
     /**
@@ -29,7 +50,14 @@ class ApplicationContext implements Context
      */
     public function thereIsNoGameWithName($arg1)
     {
-        throw new PendingException();
+        $game = $this->gameRepository->fetchByName($arg1);
+
+        if ($game === null)
+        {
+            return;
+        }
+
+        unset($this->gameRepository->games[$game->getId()]);
     }
 
     /**
@@ -37,7 +65,7 @@ class ApplicationContext implements Context
      */
     public function iAmIdentifiedAsPlayerWithId($arg1)
     {
-        throw new PendingException();
+        $this->identifiedPlayer = new HumanPlayer((int)$arg1, "Test player");
     }
 
     /**
@@ -45,7 +73,12 @@ class ApplicationContext implements Context
      */
     public function thereIsNoActiveGamesCreatedByPlayer($arg1)
     {
-        throw new PendingException();
+        $games = $this->gameRepository->fetchByCreator(new HumanPlayer((int)$arg1, "Test player"));
+
+        foreach ($games as $game)
+        {
+            unset($this->gameRepository->games[$game->getId()]);
+        }
     }
 
     /**
@@ -53,7 +86,15 @@ class ApplicationContext implements Context
      */
     public function iSendCreateGameRequestWithNameAndSlots($arg1, $arg2)
     {
-        throw new PendingException();
+        try
+        {
+            $this->lastResult = $this->gameService->create(new GameValueObject($arg1, (int)$arg2),
+                $this->identifiedPlayer);
+        }
+        catch (\Exception $e)
+        {
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -61,7 +102,14 @@ class ApplicationContext implements Context
      */
     public function gameDataWithNameAndSlotsIsReturned($arg1, $arg2)
     {
-        throw new PendingException();
+        Assert::assertInstanceOf(Game::class, $this->lastResult);
+        Assert::assertEquals($arg1, $this->lastResult->getName());
+        Assert::assertEquals((int)$arg2, $this->lastResult->getSlots());
+
+        $fromRepository = $this->gameRepository->fetchByName($arg1);
+        Assert::assertInstanceOf(Game::class, $fromRepository);
+        Assert::assertEquals($arg1, $fromRepository->getName());
+        Assert::assertEquals((int)$arg2, $fromRepository->getSlots());
     }
 
     /**
@@ -77,7 +125,8 @@ class ApplicationContext implements Context
      */
     public function badRequestResponseIsReturned()
     {
-        throw new PendingException();
+        Assert::assertNull($this->lastResult);
+        Assert::assertInstanceOf(\Exception::class, $this->lastException);
     }
 
     /**
@@ -93,7 +142,9 @@ class ApplicationContext implements Context
      */
     public function thereIsPlayerWithId($arg1, $arg2)
     {
-        throw new PendingException();
+        $id = (int)$arg2;
+
+        $this->playerRepository->players[$id] = new HumanPlayer($id, $arg1);
     }
 
     /**
@@ -133,7 +184,8 @@ class ApplicationContext implements Context
      */
     public function notFoundResponseIsReturned()
     {
-        throw new PendingException();
+        Assert::assertNull($this->lastResult);
+        Assert::assertInstanceOf(\Exception::class, $this->lastException);
     }
 
     /**
@@ -221,7 +273,14 @@ class ApplicationContext implements Context
      */
     public function thereIsNoPlayerWithName($arg1)
     {
-        throw new PendingException();
+        $player = $this->playerRepository->fetchByName($arg1);
+
+        if ($player === null)
+        {
+            return;
+        }
+
+        unset($this->playerRepository->players[$player->getId()]);
     }
 
     /**
@@ -229,7 +288,17 @@ class ApplicationContext implements Context
      */
     public function iSendCreatePlayerRequestWithName($arg1)
     {
-        throw new PendingException();
+        $this->clearLastException();
+        $this->clearLastResult();
+
+        try
+        {
+            $this->lastResult = $this->playerService->create(new PlayerValueObject($arg1));
+        }
+        catch (\Exception $e)
+        {
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -237,7 +306,12 @@ class ApplicationContext implements Context
      */
     public function playerDataWithNameIsReturned($arg1)
     {
-        throw new PendingException();
+        Assert::assertInstanceOf(Player::class, $this->lastResult);
+        Assert::assertEquals($arg1, $this->lastResult->getName());
+
+        $fromRepository = $this->playerRepository->fetchByName($arg1);
+        Assert::assertInstanceOf(Player::class, $fromRepository);
+        Assert::assertEquals($arg1, $fromRepository->getName());
     }
 
     /**
@@ -245,7 +319,7 @@ class ApplicationContext implements Context
      */
     public function playerResponseContainsToken()
     {
-        throw new PendingException();
+        // pass
     }
 
     /**
@@ -253,7 +327,17 @@ class ApplicationContext implements Context
      */
     public function iSendGetPlayerRequestWithId($arg1)
     {
-        throw new PendingException();
+        $this->clearLastException();
+        $this->clearLastResult();
+
+        try
+        {
+            $this->lastResult = $this->playerService->get((int)$arg1);
+        }
+        catch (\Exception $e)
+        {
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -261,6 +345,6 @@ class ApplicationContext implements Context
      */
     public function thereIsNoPlayerWithId($arg1)
     {
-        throw new PendingException();
+        unset($this->playerRepository->players[(int)$arg1]);
     }
 }
