@@ -154,9 +154,9 @@ class ApiContext implements Context
     }
 
     /**
-     * @Then Game should be removed
+     * @Then Game with id :arg1 should be removed
      */
-    public function gameShouldBeRemoved()
+    public function gameWithIdShouldBeRemoved($arg1)
     {
         throw new PendingException();
     }

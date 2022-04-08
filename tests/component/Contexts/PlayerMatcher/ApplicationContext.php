@@ -7,6 +7,8 @@ namespace Test\Component\Contexts\PlayerMatcher;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Tester\Exception\PendingException;
 use PHPUnit\Framework\Assert;
+use Src\PlayerMatcher\Domain\Model\Bot;
+use Src\PlayerMatcher\Domain\Model\FunGame;
 use Src\PlayerMatcher\Domain\Model\Game;
 use Src\PlayerMatcher\Domain\Model\GameValueObject;
 use Src\PlayerMatcher\Domain\Model\HumanPlayer;
@@ -86,6 +88,9 @@ class ApplicationContext implements Context
      */
     public function iSendCreateGameRequestWithNameAndSlots($arg1, $arg2)
     {
+        $this->clearLastResult();
+        $this->clearLastException();
+
         try
         {
             $this->lastResult = $this->gameService->create(new GameValueObject($arg1, (int)$arg2),
@@ -117,7 +122,17 @@ class ApplicationContext implements Context
      */
     public function thereIsGameWithSlotsAndIdCreatedByPlayer($arg1, $arg2, $arg3, $arg4)
     {
-        throw new PendingException();
+        $gameId   = (int)$arg3;
+        $playerId = (int)$arg4;
+
+        $player = $this->playerRepository->players[$playerId] ?? null;
+
+        if ($player === null)
+        {
+            $player = new HumanPlayer($playerId, "Test player");
+        }
+
+        $this->gameRepository->games[$gameId] = new FunGame($gameId, $arg1, (int)$arg2, $player);
     }
 
     /**
@@ -134,7 +149,19 @@ class ApplicationContext implements Context
      */
     public function thereIsActiveGameCreatedByPlayer($arg1)
     {
-        throw new PendingException();
+        $creatorId   = (int)$arg1;
+        $creator     = new HumanPlayer($creatorId, "Test user");
+        $playerGames = $this->gameRepository->fetchByCreator($creator);
+
+        foreach ($playerGames as $playerGame)
+        {
+            if (!$playerGame->allSlotsAssigned())
+            {
+                return;
+            }
+        }
+
+        $this->gameService->create(new GameValueObject("Sample game" . rand(0, 10000), 5), $creator);
     }
 
     /**
@@ -152,7 +179,17 @@ class ApplicationContext implements Context
      */
     public function iSendGetGameRequestWithId($arg1)
     {
-        throw new PendingException();
+        $this->clearLastResult();
+        $this->clearLastException();
+
+        try
+        {
+            $this->lastResult = $this->gameService->get((int)$arg1);
+        }
+        catch (\Exception $e)
+        {
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -160,7 +197,20 @@ class ApplicationContext implements Context
      */
     public function playerIsPresentOnOpponentsList($arg1)
     {
-        throw new PendingException();
+        $opponents = $this->lastResult->getOpponents();
+
+        $givenPlayerFound = false;
+
+        foreach ($opponents as $opponent)
+        {
+            if ($opponent instanceof Player && $opponent->getName() === $arg1)
+            {
+                $givenPlayerFound = true;
+                break;
+            }
+        }
+
+        Assert::assertTrue($givenPlayerFound);
     }
 
     /**
@@ -168,7 +218,7 @@ class ApplicationContext implements Context
      */
     public function thereIsNoGameWithId($arg1)
     {
-        throw new PendingException();
+        unset($this->gameRepository->games[(int)$arg1]);
     }
 
     /**
@@ -176,7 +226,7 @@ class ApplicationContext implements Context
      */
     public function iAmNotIdentified()
     {
-        throw new PendingException();
+        $this->identifiedPlayer = new HumanPlayer(0, '');
     }
 
     /**
@@ -193,7 +243,10 @@ class ApplicationContext implements Context
      */
     public function iSendGetGameListRequest()
     {
-        throw new PendingException();
+        $this->clearLastException();
+        $this->clearLastResult();
+
+        $this->lastResult = $this->gameService->list();
     }
 
     /**
@@ -201,7 +254,7 @@ class ApplicationContext implements Context
      */
     public function gameListIsReturnedContaining()
     {
-        throw new PendingException();
+        Assert::assertIsArray($this->lastResult);
     }
 
     /**
@@ -209,7 +262,19 @@ class ApplicationContext implements Context
      */
     public function gameIsPresentOnResultList($arg1)
     {
-        throw new PendingException();
+        $gameInList = false;
+
+        foreach ($this->lastResult as $game)
+        {
+            if ($game->getName() === $arg1)
+            {
+                $gameInList = true;
+
+                break;
+            }
+        }
+
+        Assert::assertTrue($gameInList);
     }
 
     /**
@@ -217,15 +282,25 @@ class ApplicationContext implements Context
      */
     public function iSendDeleteGameRequestWithId($arg1)
     {
-        throw new PendingException();
+        $this->clearLastResult();
+        $this->clearLastException();
+
+        try
+        {
+            $this->gameService->cancel($this->gameRepository->games[(int)$arg1], $this->identifiedPlayer);
+        }
+        catch (\Exception $e)
+        {
+            $this->lastException = $e;
+        }
     }
 
     /**
-     * @Then Game should be removed
+     * @Then Game with id :arg1 should be removed
      */
-    public function gameShouldBeRemoved()
+    public function gameWithIdShouldBeRemoved($arg1)
     {
-        throw new PendingException();
+        Assert::assertFalse(isset($this->gameRepository->games[(int)$arg1]));
     }
 
     /**
@@ -233,7 +308,8 @@ class ApplicationContext implements Context
      */
     public function forbiddenResponseIsReturned()
     {
-        throw new PendingException();
+        Assert::assertNull($this->lastResult);
+        Assert::assertInstanceOf(\Exception::class, $this->lastException);
     }
 
     /**
@@ -241,7 +317,15 @@ class ApplicationContext implements Context
      */
     public function iSendUpdateGameRequestWithPlayerOpponent($arg1, $arg2)
     {
-        throw new PendingException();
+        $this->clearLastResult();
+        $this->clearLastException();
+
+        try{
+            $game = $this->gameService->get((int)$arg1);
+            $this->lastResult = $this->gameService->assignOpponent($game, $this->playerRepository->fetchByName($arg2));
+        } catch (\Exception $e){
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -249,7 +333,15 @@ class ApplicationContext implements Context
      */
     public function iSendUpdateGameRequestWithAiOpponent($arg1, $arg2)
     {
-        throw new PendingException();
+        $this->clearLastResult();
+        $this->clearLastException();
+
+        try{
+            $game = $this->gameService->get((int)$arg1);
+            $this->lastResult = $this->gameService->assignOpponent($game, new Bot($arg2));
+        } catch (\Exception $e){
+            $this->lastException = $e;
+        }
     }
 
     /**
@@ -257,7 +349,20 @@ class ApplicationContext implements Context
      */
     public function aiBotIsPresentOnOpponentsList($arg1)
     {
-        throw new PendingException();
+        $opponents = $this->lastResult->getOpponents();
+
+        $givenOpponentFound = false;
+
+        foreach ($opponents as $opponent)
+        {
+            if ($opponent instanceof Bot && $opponent->getLevel() === $arg1)
+            {
+                $givenOpponentFound = true;
+                break;
+            }
+        }
+
+        Assert::assertTrue($givenOpponentFound);
     }
 
     /**

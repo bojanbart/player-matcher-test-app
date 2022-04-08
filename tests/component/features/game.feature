@@ -48,7 +48,7 @@ Feature: Creating and managing games
     Given There is game 'Game S' with '2' slots and id '1' created by player '2'
     And I am identified as player with id '2'
     When I send delete game request with id '1'
-    Then Game should be removed
+    Then Game with id '1' should be removed
 
   Scenario: I want to remove game created by other player
     Given There is game 'Game S' with '2' slots and id '1' created by player '2'
@@ -63,13 +63,6 @@ Feature: Creating and managing games
     When I send update game '1' request with player opponent 'Bojan'
     Then Game data with name 'Game S' and slots '2' is returned
     And Player 'Bojan' is present on opponents list
-
-  Scenario: I want to assign other player to game
-    Given There is player 'Bojan' with id '3'
-    And There is game 'Game S' with '2' slots and id '1' created by player '2'
-    And I am identified as player with id '4'
-    When I send update game '1' request with player opponent 'Bojan'
-    Then Forbidden response is returned
 
   Scenario: I want to assign ai bot to game
     Given There is player 'Bojan' with id '3'
